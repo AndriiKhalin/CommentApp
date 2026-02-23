@@ -1,0 +1,44 @@
+<div class="app">
+  <h1>💬 Comments</h1>
+
+  <app-comment-form (commentPosted)="loadComments()" />
+
+  <table class="comments-table">
+    <thead>
+      <tr>
+        <th (click)="handleSort('userName')" style="cursor:pointer">
+          User Name {{ sortIcon('userName') }}
+        </th>
+        <th (click)="handleSort('email')" style="cursor:pointer">
+          E-mail {{ sortIcon('email') }}
+        </th>
+        <th (click)="handleSort('createdAt')" style="cursor:pointer">
+          Date {{ sortIcon('createdAt') }}
+        </th>
+        <th>Preview</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (comment of result?.items; track comment.id) {
+        <tr>
+          <td>{{ comment.userName }}</td>
+          <td>{{ comment.email }}</td>
+          <td>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</td>
+          <td>{{ comment.text | slice:0:60 }}...</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+
+  <!-- Full threaded view -->
+  @for (comment of result?.items; track comment.id) {
+    <app-comment-item [comment]="comment" />
+  }
+
+  <!-- Pagination -->
+  <div class="pagination">
+    @for (p of pages; track p) {
+      <button [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
+    }
+  </div>
+</div>

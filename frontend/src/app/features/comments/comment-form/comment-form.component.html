@@ -1,0 +1,67 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="comment-form">
+
+  <div class="form-row">
+    <input formControlName="userName" placeholder="User Name *" />
+    @if (f['userName'].touched && f['userName'].errors) {
+      <span class="error">
+        {{ f['userName'].errors?.['required'] ? 'Required' : 'Latin letters and digits only' }}
+      </span>
+    }
+  </div>
+
+  <div class="form-row">
+    <input formControlName="email" type="email" placeholder="E-mail *" />
+    @if (f['email'].touched && f['email'].errors) {
+      <span class="error">Valid email required</span>
+    }
+  </div>
+
+  <div class="form-row">
+    <input formControlName="homePage" placeholder="Home Page (optional)" />
+    @if (f['homePage'].touched && f['homePage'].errors) {
+      <span class="error">Must be valid URL (http/https)</span>
+    }
+  </div>
+
+  <!-- Tag toolbar -->
+  <div class="toolbar">
+    <button type="button" (click)="insertTag('<i>','</i>')">[i]</button>
+    <button type="button" (click)="insertTag('<strong>','</strong>')">[strong]</button>
+    <button type="button" (click)="insertTag('<code>','</code>')">[code]</button>
+    <button type="button" (click)="insertTag('<a href=&quot;&quot; title=&quot;&quot;>','</a>')">[a]</button>
+  </div>
+
+  <div class="form-row">
+    <textarea formControlName="text" rows="5" placeholder="Your message *"></textarea>
+    @if (f['text'].touched && f['text'].errors?.['required']) {
+      <span class="error">Required</span>
+    }
+  </div>
+
+  <!-- Preview -->
+  @if (preview) {
+    <div class="preview">
+      <strong>Preview:</strong>
+      <div [innerHTML]="preview"></div>
+    </div>
+  }
+
+  <!-- CAPTCHA -->
+  <div class="form-row captcha-row">
+    <img [src]="captchaUrl" alt="captcha" (click)="loadCaptcha()" title="Click to refresh" />
+    <input formControlName="captcha" placeholder="Enter CAPTCHA *" />
+    @if (f['captcha'].touched && f['captcha'].errors?.['required']) {
+      <span class="error">Required</span>
+    }
+  </div>
+
+  <!-- File -->
+  <div class="form-row">
+    <input type="file" accept=".jpg,.jpeg,.gif,.png,.txt" (change)="onFileChange($event)" />
+    @if (fileError) {
+      <span class="error">{{ fileError }}</span>
+    }
+  </div>
+
+  <button type="submit" class="submit-btn">Post Comment</button>
+</form>

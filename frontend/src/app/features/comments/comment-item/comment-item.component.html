@@ -1,0 +1,47 @@
+<div class="comment-item" [style.marginLeft]="marginLeft">
+  <div class="comment-header">
+    <strong>{{ comment.userName }}</strong>
+    <span class="email">{{ comment.email }}</span>
+    @if (comment.homePage) {
+      <a [href]="comment.homePage" target="_blank" rel="noopener noreferrer">🌐</a>
+    }
+    <span class="date">{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</span>
+  </div>
+
+  <div class="comment-body" [innerHTML]="comment.text"></div>
+
+  @if (comment.attachmentPath && comment.attachmentType === 'Image') {
+    <img
+      [src]="apiBase + comment.attachmentPath"
+      alt="attachment"
+      class="attachment-img"
+      (click)="openLightbox(comment.attachmentPath!)"
+    />
+  }
+
+  @if (comment.attachmentPath && comment.attachmentType === 'Text') {
+    <a [href]="apiBase + comment.attachmentPath" target="_blank">📄 Text attachment</a>
+  }
+
+  @if (lightboxSrc) {
+    <div class="lightbox" (click)="closeLightbox()">
+      <img [src]="lightboxSrc" alt="full size" />
+    </div>
+  }
+
+  <button class="reply-btn" (click)="showReply = !showReply">
+    {{ showReply ? 'Cancel' : 'Reply' }}
+  </button>
+
+  @if (showReply) {
+    <app-comment-form
+      [parentId]="comment.id"
+      (commentPosted)="onNewComment()"
+    />
+  }
+
+  <!-- Recursive nested replies -->
+  @for (reply of comment.replies; track reply.id) {
+    <app-comment-item [comment]="reply" [depth]="depth + 1" />
+  }
+</div>

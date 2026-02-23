@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "YourStrong@Passw0rd"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - mssqldata:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1' -No"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      ConnectionStrings__Default: "Server=mssql;Database=commentsdb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;"
+      ASPNETCORE_URLS: "http://+:5000"
+    ports:
+      - "5000:5000"
+    depends_on:
+      mssql:
+        condition: service_healthy
+    volumes:
+      - uploads:/app/wwwroot/uploads
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+
+volumes:
+  mssqldata:
+  uploads:
