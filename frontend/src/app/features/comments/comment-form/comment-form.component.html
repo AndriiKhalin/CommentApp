@@ -32,7 +32,7 @@
   </div>
 
   <div class="form-row">
-    <textarea formControlName="text" rows="5" placeholder="Your message *"></textarea>
+    <textarea #messageInput formControlName="text" rows="5" placeholder="Your message *"></textarea>
     @if (f['text'].touched && f['text'].errors?.['required']) {
       <span class="error">Required</span>
     }

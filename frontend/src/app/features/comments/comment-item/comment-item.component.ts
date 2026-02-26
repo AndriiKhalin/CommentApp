@@ -8,7 +8,8 @@ import { environment } from '../../../../environments/environment';
   selector: 'app-comment-item',
   standalone: true,
   imports: [CommonModule, CommentFormComponent],
-  templateUrl: './comment-item.component.html'
+  templateUrl: './comment-item.component.html',
+  styleUrl: './comment-item.component.scss'
 })
 export class CommentItemComponent {
   @Input() comment!: Comment;

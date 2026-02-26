@@ -1,5 +1,5 @@
 import {
-  Component, OnInit, Input, Output, EventEmitter, inject
+  Component, OnInit, Input, Output, EventEmitter, inject, ViewChild, ElementRef
 } from '@angular/core';
 import {
   ReactiveFormsModule, FormBuilder, Validators, AbstractControl
@@ -13,11 +13,13 @@ import { Comment } from '../../../core/models/comment.model';
   selector: 'app-comment-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './comment-form.component.html'
+  templateUrl: './comment-form.component.html',
+  styleUrl: './comment-form.component.scss'
 })
 export class CommentFormComponent implements OnInit {
   @Input() parentId?: number;
   @Output() commentPosted = new EventEmitter<Comment>();
+  @ViewChild('messageInput') messageInput?: ElementRef<HTMLTextAreaElement>;
 
   private fb = inject(FormBuilder);
   private commentService = inject(CommentService);
@@ -72,15 +74,32 @@ export class CommentFormComponent implements OnInit {
   }
 
   insertTag(open: string, close: string): void {
-    const textarea = document.querySelector<HTMLTextAreaElement>('textarea[formControlName="text"]');
-    if (!textarea) return;
+  const textarea = this.messageInput?.nativeElement;
+  if (!textarea) return;
 
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const current = this.form.get('text')!.value ?? '';
-    const newVal = current.slice(0, start) + open + current.slice(start, end) + close + current.slice(end);
-    this.form.get('text')!.setValue(newVal);
-  }
+  const current = this.form.controls.text.value ?? '';
+  const start = textarea.selectionStart ?? current.length;
+  const end = textarea.selectionEnd ?? current.length;
+
+  const selected = current.slice(start, end) || 'text';
+
+  const next =
+    current.slice(0, start) +
+    open +
+    selected +
+    close +
+    current.slice(end);
+
+  this.form.controls.text.setValue(next);
+  this.form.controls.text.markAsDirty();
+  this.form.controls.text.markAsTouched();
+
+  queueMicrotask(() => {
+    const pos = start + open.length + selected.length + close.length;
+    textarea.focus();
+    textarea.setSelectionRange(pos, pos);
+  });
+}
 
   onFileChange(event: Event): void {
     const input = event.target as HTMLInputElement;

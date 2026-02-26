@@ -13,7 +13,8 @@ type SortField = 'createdAt' | 'userName' | 'email';
   selector: 'app-comment-list',
   standalone: true,
   imports: [CommonModule, CommentFormComponent, CommentItemComponent],
-  templateUrl: './comment-list.component.html'
+  templateUrl: './comment-list.component.html',
+  styleUrl: './comment-list.component.scss'
 })
 export class CommentListComponent implements OnInit, OnDestroy {
   private commentService = inject(CommentService);
