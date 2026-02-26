@@ -6,6 +6,7 @@ namespace CommentsApp.Infrastructure.Data;
 public class CommentsDbContext(DbContextOptions<CommentsDbContext> options) : DbContext(options)
 {
     public DbSet<Comment> Comments => Set<Comment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Comment>(entity =>

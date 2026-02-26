@@ -1,5 +1,4 @@
 ﻿using CommentsApp.Application.CQRS.Comments.Commands;
-using CommentsApp.Application.DTOs.Comments;
 using CommentsApp.Domain.Interfaces;
 using FluentValidation;
 

@@ -12,23 +12,6 @@ public class CommentService(ICommentRepository repo) : ICommentService
 {
     private readonly HtmlSanitizer _sanitizer = CreateSanitizer();
 
-    // Allows tags: <a href="" title="">, <code>, <i>, <strong>
-    private static HtmlSanitizer CreateSanitizer()
-    {
-        var s = new HtmlSanitizer();
-        s.AllowedTags.Clear();
-        s.AllowedTags.Add("a");
-        s.AllowedTags.Add("code");
-        s.AllowedTags.Add("i");
-        s.AllowedTags.Add("strong");
-        s.AllowedAttributes.Clear();
-        s.AllowedAttributes.Add("href");
-        s.AllowedAttributes.Add("title");
-        s.AllowedSchemes.Add("http");
-        s.AllowedSchemes.Add("https");
-        return s;
-    }
-
     public async Task<PagedResult<CommentDto>> GetCommentsAsync(
         int page, int pageSize, string sortBy, bool descending)
     {
@@ -63,10 +46,30 @@ public class CommentService(ICommentRepository repo) : ICommentService
         return MapToDto(created);
     }
 
-    private CommentDto MapToDto(Comment c) => new(
-        c.Id, c.UserName, c.Email, c.HomePage, c.Text,
-        c.AttachmentPath, c.AttachmentType?.ToString(),
-        c.CreatedAt, c.ParentId,
-        c.Replies.Select(MapToDto).ToList()
-    );
+    // Allows tags: <a href="" title="">, <code>, <i>, <strong>
+    private static HtmlSanitizer CreateSanitizer()
+    {
+        var s = new HtmlSanitizer();
+        s.AllowedTags.Clear();
+        s.AllowedTags.Add("a");
+        s.AllowedTags.Add("code");
+        s.AllowedTags.Add("i");
+        s.AllowedTags.Add("strong");
+        s.AllowedAttributes.Clear();
+        s.AllowedAttributes.Add("href");
+        s.AllowedAttributes.Add("title");
+        s.AllowedSchemes.Add("http");
+        s.AllowedSchemes.Add("https");
+        return s;
+    }
+
+    private CommentDto MapToDto(Comment c)
+    {
+        return new CommentDto(
+            c.Id, c.UserName, c.Email, c.HomePage, c.Text,
+            c.AttachmentPath, c.AttachmentType?.ToString(),
+            c.CreatedAt, c.ParentId,
+            c.Replies.Select(MapToDto).ToList()
+        );
+    }
 }

@@ -6,51 +6,51 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 
-namespace CommentsApp.API.Controllers
+namespace CommentsApp.API.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class CaptchaController(CaptchaService captchaService) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class CaptchaController(CaptchaService captchaService) : ControllerBase
+    [HttpGet]
+    public async Task<IActionResult> GetCaptcha()
     {
-        [HttpGet]
-        public async Task<IActionResult> GetCaptcha()
+        var (sessionId, code) = await captchaService.GenerateCaptchaAsync();
+        var imageBytes = GenerateCaptchaImage(code);
+
+        Response.Headers["X-Captcha-Session"] = sessionId;
+        return File(imageBytes, "image/png");
+    }
+
+    private static byte[] GenerateCaptchaImage(string code)
+    {
+        using var image = new Image<Rgba32>(200, 60);
+        var rnd = new Random();
+
+        image.Mutate(ctx =>
         {
-            var (sessionId, code) = await captchaService.GenerateCaptchaAsync();
-            var imageBytes = GenerateCaptchaImage(code);
+            ctx.BackgroundColor(Color.White);
 
-            Response.Headers["X-Captcha-Session"] = sessionId;
-            return File(imageBytes, "image/png");
-        }
-
-        private static byte[] GenerateCaptchaImage(string code)
-        {
-            using var image = new Image<Rgba32>(200, 60);
-            var rnd = new Random();
-
-            image.Mutate(ctx =>
+            // Noise lines
+            for (var i = 0; i < 8; i++)
             {
-                ctx.BackgroundColor(Color.White);
+                var color = Color.FromRgb(
+                    (byte)rnd.Next(150, 220),
+                    (byte)rnd.Next(150, 220),
+                    (byte)rnd.Next(150, 220));
+                ctx.DrawLine(color, 1f,
+                    new PointF(rnd.Next(0, 200), rnd.Next(0, 60)),
+                    new PointF(rnd.Next(0, 200), rnd.Next(0, 60)));
+            }
 
-                // Noise lines
-                for (int i = 0; i < 8; i++)
-                {
-                    var color = Color.FromRgb(
-                        (byte)rnd.Next(150, 220),
-                        (byte)rnd.Next(150, 220),
-                        (byte)rnd.Next(150, 220));
-                    ctx.DrawLine(color, 1f,
-                        new PointF(rnd.Next(0, 200), rnd.Next(0, 60)),
-                        new PointF(rnd.Next(0, 200), rnd.Next(0, 60)));
-                }
+            // Text
+            var font = SystemFonts.CreateFont("Arial", 30,
+                FontStyle.Bold); //TODO - check if this font is available on the server, maybe we can embed a custom font in the project and use it here
+            ctx.DrawText(code, font, Color.DarkBlue, new PointF(20, 15));
+        });
 
-                // Text
-                var font = SystemFonts.CreateFont("Arial", 30, FontStyle.Bold); //TODO - check if this font is available on the server, maybe we can embed a custom font in the project and use it here
-                ctx.DrawText(code, font, Color.DarkBlue, new PointF(20, 15));
-            });
-
-            using var ms = new MemoryStream();
-            image.SaveAsPng(ms);
-            return ms.ToArray();
-        }
+        using var ms = new MemoryStream();
+        image.SaveAsPng(ms);
+        return ms.ToArray();
     }
 }

@@ -1,6 +1,6 @@
-﻿using CommentsApp.Application.Interfaces;
+﻿using System.Text.Json;
+using CommentsApp.Application.Interfaces;
 using StackExchange.Redis;
-using System.Text.Json;
 
 namespace CommentsApp.Infrastructure.Cache;
 
@@ -22,8 +22,12 @@ public class RedisCacheService(IConnectionMultiplexer redis) : ICacheService
     }
 
     public async Task RemoveAsync(string key)
-        => await _db.KeyDeleteAsync(key);
+    {
+        await _db.KeyDeleteAsync(key);
+    }
 
     public async Task<bool> ExistsAsync(string key)
-        => await _db.KeyExistsAsync(key);
+    {
+        return await _db.KeyExistsAsync(key);
+    }
 }

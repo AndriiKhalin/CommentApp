@@ -7,7 +7,8 @@ namespace CommentsApp.Infrastructure.Repositories;
 
 public class CommentRepository(CommentsDbContext context) : ICommentRepository
 {
-    public async Task<(IEnumerable<Comment> Items, int Total)> GetRootCommentsAsync(int page, int pageSize, string sortBy, bool descending)
+    public async Task<(IEnumerable<Comment> Items, int Total)> GetRootCommentsAsync(int page, int pageSize,
+        string sortBy, bool descending)
     {
         var baseQuery = context.Comments
             .AsNoTracking()
@@ -15,7 +16,7 @@ public class CommentRepository(CommentsDbContext context) : ICommentRepository
 
         var total = await baseQuery.CountAsync();
 
-        IQueryable<Comment> queryWithIncludes = baseQuery
+        var queryWithIncludes = baseQuery
             .Include(c => c.Replies)
             .ThenInclude(r => r.Replies)
             .AsSplitQuery();

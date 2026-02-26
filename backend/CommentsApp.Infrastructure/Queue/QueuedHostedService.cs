@@ -15,7 +15,6 @@ public sealed class QueuedHostedService(
         logger.LogInformation("[Queue] Background task worker started");
 
         while (!stoppingToken.IsCancellationRequested)
-        {
             try
             {
                 var workItem = await queue.DequeueAsync(stoppingToken);
@@ -32,6 +31,5 @@ public sealed class QueuedHostedService(
             {
                 logger.LogError(ex, "[Queue] Error executing background work item");
             }
-        }
     }
 }

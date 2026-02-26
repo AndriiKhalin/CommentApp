@@ -1,5 +1,5 @@
-﻿using CommentsApp.Application.Interfaces;
-using System.Threading.Channels;
+﻿using System.Threading.Channels;
+using CommentsApp.Application.Interfaces;
 
 namespace CommentsApp.Infrastructure.Queue;
 

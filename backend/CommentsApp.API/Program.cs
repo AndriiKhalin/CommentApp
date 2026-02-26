@@ -27,8 +27,7 @@ redisOptions.AbortOnConnectFail = false;
 redisOptions.ConnectRetry = 3;
 redisOptions.ConnectTimeout = 5000;
 
-builder.Services.AddSingleton<IConnectionMultiplexer>(
-    _ => ConnectionMultiplexer.Connect(redisOptions));
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ => ConnectionMultiplexer.Connect(redisOptions));
 
 // DI
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
