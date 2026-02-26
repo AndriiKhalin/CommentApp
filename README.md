@@ -9,11 +9,27 @@
 Full-stack Single Page Application (SPA) for nested comments with file attachments, CAPTCHA, and real-time updates.
 
 ## 🛠 Tech Stack
-- **Backend**: .NET 10, ASP.NET Core, Entity Framework Core
-- **Database**: MSSQL (Microsoft SQL Server)
-- **Frontend**: Angular + TypeScript
-- **Real-time**: SignalR (WebSocket)
-- **Containerization**: Docker + Docker Compose
+
+### Backend
+- **ASP.NET Core 10** (Web API)
+- **Entity Framework Core** (Code First, MSSQL)
+- **MediatR** (CQRS pattern)
+- **FluentValidation** (request validation)
+- **SignalR** (real-time WebSocket notifications)
+- **Redis** (CAPTCHA session caching)
+- **ImageSharp** (image resize, CAPTCHA generation)
+- **HtmlSanitizer** (XSS protection)
+
+### Frontend
+- **Angular 21** (standalone components)
+- **RxJS** (reactive data flow)
+- **SignalR client** (real-time updates)
+
+### Infrastructure
+- **Docker & Docker Compose** (full containerization)
+- **Nginx** (reverse proxy for frontend)
+- **MSSQL 2022** (database)
+- **Redis 7** (cache)
 
 ## ✨ Features
 - 🧵 **Nested threaded comments** (cascade layout)
@@ -28,29 +44,95 @@ Full-stack Single Page Application (SPA) for nested comments with file attachmen
 - 🔍 **Lightbox** for image preview
 - ⚡ **Real-time updates** via WebSocket (SignalR)
 
-## 🚀 Quick Start
+## 📐 Architecture
 
-Follow these steps to run the application locally using Docker:
+```
+┌─────────┐     ┌──────────┐     ┌──────────┐     ┌───────┐
+│ Angular │────▶│  Nginx   │────▶│ ASP.NET  │────▶│ MSSQL │
+│   SPA   │     │ (proxy)  │     │ Core API │     └───────┘
+└─────────┘     └──────────┘     │          │────▶┌───────┐
+                                 │ SignalR  │     │ Redis │
+                                 └──────────┘     └───────┘
+```
+
+## 🚀 Quick Start (Docker)
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/AndriiKhalin/CommentApp.git
 cd CommentApp
-
-# 2. Build and start the containers
-docker compose up --build
+docker compose up -d
 ```
 
-**The application will be available at:**
-- 🌐 **Frontend**: `http://localhost`
-- ⚙️ **API**: `http://localhost:5000`
-- 📚 **Swagger UI**: `http://localhost:5000/swagger`
+Open **http://localhost** in your browser.
 
-## 📂 Project Structure
-```text
-📦 CommentApp
- ┣ 📂 backend/             # .NET solution (Domain, Application, Infrastructure, API)
- ┣ 📂 frontend/            # Angular SPA
- ┣ 📜 docker-compose.yml   # Docker orchestration for app & DB
- ┗ 📜 db-schema.sql        # Database initialization script
+### Services
+
+| Service  | URL                    | Description        |
+|----------|------------------------|--------------------|
+| Frontend | http://localhost       | Angular SPA        |
+| API      | http://localhost/api   | REST API via Nginx |
+| Backend  | http://localhost:5000  | Direct API access  |
+| MSSQL    | localhost:1434         | Database           |
+| Redis    | localhost:6379         | Cache              |
+
+### Stop
+
+```bash
+docker compose down        # stop containers
+docker compose down -v     # stop + remove data volumes
 ```
+## 🗄 Database Schema
+
+See [db-schema.sql](./db-schema.sql) for the full schema.
+
+```
+Comments
+├── Id (PK, INT, IDENTITY)
+├── UserName (NVARCHAR 100, NOT NULL)
+├── Email (NVARCHAR 200, NOT NULL)
+├── HomePage (NVARCHAR 500, NULL)
+├── Text (NVARCHAR MAX, NOT NULL)
+├── AttachmentPath (NVARCHAR 500, NULL)
+├── AttachmentType (NVARCHAR 10, NULL) — 'Image' | 'Text'
+├── CreatedAt (DATETIME2, DEFAULT GETUTCDATE())
+└── ParentId (INT, NULL, FK → Comments.Id) — self-referencing
+```
+
+## 📁 Project Structure
+
+```
+SpaComments/
+├── backend/
+│   ├── CommentsApp.API/          # Controllers, Hubs, Middleware
+│   ├── CommentsApp.Application/  # CQRS, DTOs, Services, Validators
+│   ├── CommentsApp.Domain/       # Entities, Interfaces
+│   ├── CommentsApp.Infrastructure/ # EF Core, Redis, Repositories
+│   └── Dockerfile
+├── frontend/
+│   ├── src/app/
+│   │   ├── core/                 # Models, Services
+│   │   └── features/comments/    # Form, List, Item components
+│   ├── nginx.conf
+│   └── Dockerfile
+├── docker-compose.yml
+├── db-schema.sql
+└── README.md
+```
+
+## 🔧 Local Development (without Docker)
+
+### Backend
+```bash
+cd backend
+dotnet restore
+dotnet run --project CommentsApp.API
+```
+Requires: .NET 10 SDK, MSSQL, Redis running locally.
+
+### Frontend
+```bash
+cd frontend
+npm install
+npm start
+```
+Opens at http://localhost:4200 with proxy to backend.
