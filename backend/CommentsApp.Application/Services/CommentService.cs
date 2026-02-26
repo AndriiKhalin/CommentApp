@@ -12,7 +12,7 @@ public class CommentService(ICommentRepository repo) : ICommentService
 {
     private readonly HtmlSanitizer _sanitizer = CreateSanitizer();
 
-    // Дозволені теги: <a href="" title="">, <code>, <i>, <strong>
+    // Allows tags: <a href="" title="">, <code>, <i>, <strong>
     private static HtmlSanitizer CreateSanitizer()
     {
         var s = new HtmlSanitizer();

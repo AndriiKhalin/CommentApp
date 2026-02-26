@@ -1,7 +1,10 @@
-﻿using CommentsApp.Application.DTOs.Comments;
+﻿using CommentsApp.Application.CQRS.Comments.Commands;
+using CommentsApp.Application.CQRS.Comments.Queries;
+using CommentsApp.Application.DTOs.Comments;
 using CommentsApp.Application.Interfaces;
 using CommentsApp.Application.Services;
 using CommentsApp.Application.Validators.Comments;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
@@ -10,24 +13,15 @@ namespace CommentsApp.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CommentsController : ControllerBase
+    public class CommentsController(
+        IMediator mediator,
+        CaptchaService captchaService,
+        IWebHostEnvironment env)
+        : ControllerBase
     {
-        private readonly ICommentService _service;
-        private readonly CaptchaService _captchaService;
-        private readonly IWebHostEnvironment _env;
         private const int MaxImageWidth = 320;
         private const int MaxImageHeight = 240;
         private const long MaxTextFileSize = 100 * 1024; // 100KB
-
-        public CommentsController(
-            ICommentService service,
-            CaptchaService captchaService,
-            IWebHostEnvironment env)
-        {
-            _service = service;
-            _captchaService = captchaService;
-            _env = env;
-        }
 
         [HttpGet]
         public async Task<IActionResult> GetComments(
@@ -36,7 +30,9 @@ namespace CommentsApp.API.Controllers
             [FromQuery] string sortBy = "createdAt",
             [FromQuery] bool descending = true)
         {
-            var result = await _service.GetCommentsAsync(page, pageSize, sortBy, descending);
+            var result = await mediator.Send(
+                new GetCommentsQuery(page, pageSize, sortBy, descending));
+
             return Ok(result);
         }
 
@@ -46,17 +42,9 @@ namespace CommentsApp.API.Controllers
             [FromForm] string captchaSessionId,
             [FromForm] IFormFile? attachment)
         {
-            // Validate captcha
-            if (!_captchaService.ValidateCaptcha(captchaSessionId, request.Captcha))
+            if (!await captchaService.ValidateCaptchaAsync(captchaSessionId, request.Captcha))
                 return BadRequest(new { error = "Invalid CAPTCHA" });
 
-            // Validate request
-            var validator = new CreateCommentValidator();
-            var validationResult = await validator.ValidateAsync(request);
-            if (!validationResult.IsValid)
-                return BadRequest(validationResult.Errors.Select(e => e.ErrorMessage));
-
-            // Handle attachment
             string? attachmentPath = null;
             string? attachmentType = null;
 
@@ -70,7 +58,9 @@ namespace CommentsApp.API.Controllers
                 attachmentType = result.Type;
             }
 
-            var comment = await _service.CreateCommentAsync(request, attachmentPath, attachmentType);
+            var comment = await mediator.Send(
+                new CreateCommentCommand(request, attachmentPath, attachmentType));
+
             return CreatedAtAction(nameof(GetComments), new { id = comment.Id }, comment);
         }
 
@@ -78,7 +68,7 @@ namespace CommentsApp.API.Controllers
             IFormFile file)
         {
             var ext = Path.GetExtension(file.FileName).ToLower();
-            var uploadsDir = Path.Combine(_env.WebRootPath, "uploads");
+            var uploadsDir = Path.Combine(env.WebRootPath, "uploads");
             Directory.CreateDirectory(uploadsDir);
             var fileName = $"{Guid.NewGuid()}{ext}";
             var filePath = Path.Combine(uploadsDir, fileName);

@@ -10,19 +10,12 @@ namespace CommentsApp.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CaptchaController : ControllerBase
+    public class CaptchaController(CaptchaService captchaService) : ControllerBase
     {
-        private readonly CaptchaService _captchaService;
-
-        public CaptchaController(CaptchaService captchaService)
-        {
-            _captchaService = captchaService;
-        }
-
         [HttpGet]
-        public IActionResult GetCaptcha()
+        public async Task<IActionResult> GetCaptcha()
         {
-            var (sessionId, code) = _captchaService.GenerateCaptcha();
+            var (sessionId, code) = await captchaService.GenerateCaptchaAsync();
             var imageBytes = GenerateCaptchaImage(code);
 
             Response.Headers["X-Captcha-Session"] = sessionId;
@@ -51,7 +44,7 @@ namespace CommentsApp.API.Controllers
                 }
 
                 // Text
-                var font = SystemFonts.CreateFont("Arial", 30, FontStyle.Bold);
+                var font = SystemFonts.CreateFont("Arial", 30, FontStyle.Bold); //TODO - check if this font is available on the server, maybe we can embed a custom font in the project and use it here
                 ctx.DrawText(code, font, Color.DarkBlue, new PointF(20, 15));
             });
 

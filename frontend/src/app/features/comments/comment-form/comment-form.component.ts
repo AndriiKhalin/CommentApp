@@ -6,6 +6,7 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { CommentService } from '../../../core/services/comment.service';
+import { CaptchaService } from '../../../core/services/captcha.service';
 import { Comment } from '../../../core/models/comment.model';
 
 @Component({
@@ -20,6 +21,7 @@ export class CommentFormComponent implements OnInit {
 
   private fb = inject(FormBuilder);
   private commentService = inject(CommentService);
+  private captchaService = inject(CaptchaService);
 
   captchaUrl = '';
   captchaSessionId = '';
@@ -47,10 +49,25 @@ export class CommentFormComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    if (this.captchaUrl) {
+      URL.revokeObjectURL(this.captchaUrl);
+    }
+  }
+
   loadCaptcha(): void {
-    this.commentService.getCaptcha().subscribe(({ blob, sessionId }) => {
-      this.captchaUrl = URL.createObjectURL(blob);
-      this.captchaSessionId = sessionId;
+    this.captchaService.getCaptcha().subscribe({
+      next: ({ blob, sessionId }) => {
+        if (this.captchaUrl) {
+          URL.revokeObjectURL(this.captchaUrl);
+        }
+        this.captchaUrl = URL.createObjectURL(blob);
+        this.captchaSessionId = sessionId;
+      },
+      error: () => {
+        this.captchaUrl = '';
+        this.captchaSessionId = '';
+      }
     });
   }
 

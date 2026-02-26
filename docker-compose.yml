@@ -1,4 +1,4 @@
-version: '3.9'
+# version: '3.9'
 
 services:
   mssql:
@@ -8,7 +8,7 @@ services:
       SA_PASSWORD: "YourStrong@Passw0rd"
       MSSQL_PID: "Express"
     ports:
-      - "1433:1433"
+      - "1434:1433"
     volumes:
       - mssqldata:/var/opt/mssql
     healthcheck:
@@ -17,15 +17,31 @@ services:
       timeout: 10s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    command: redis-server --appendonly yes  # persistence
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 5
+
   backend:
     build: ./backend
     environment:
       ConnectionStrings__Default: "Server=mssql;Database=commentsdb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;"
-      ASPNETCORE_URLS: "http://+:5000"
+      ConnectionStrings__Redis: "redis:6379"
+      ASPNETCORE_HTTP_PORTS: "5000"
+      # ASPNETCORE_URLS: "http://+:5000"
     ports:
       - "5000:5000"
     depends_on:
       mssql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - uploads:/app/wwwroot/uploads
@@ -39,4 +55,5 @@ services:
 
 volumes:
   mssqldata:
+  redisdata:
   uploads:

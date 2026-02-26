@@ -1,25 +1,26 @@
-﻿using Microsoft.Extensions.Caching.Memory;
+﻿using CommentsApp.Application.Interfaces;
 
 namespace CommentsApp.Application.Services;
 
-public class CaptchaService(IMemoryCache cache)
+public class CaptchaService(ICacheService cache)
 {
     private static readonly Random _rnd = new();
 
-    public (string SessionId, string Code) GenerateCaptcha()
+    public async Task<(string SessionId, string Code)> GenerateCaptchaAsync()
     {
         var code = GenerateCode();
         var sessionId = Guid.NewGuid().ToString();
-        cache.Set($"captcha_{sessionId}", code, TimeSpan.FromMinutes(5));
+        await cache.SetAsync($"captcha:{sessionId}", code, TimeSpan.FromMinutes(5));
         return (sessionId, code);
     }
 
-    public bool ValidateCaptcha(string sessionId, string userInput)
+    public async Task<bool> ValidateCaptchaAsync(string sessionId, string userInput)
     {
-        if (!cache.TryGetValue($"captcha_{sessionId}", out string? stored))
-            return false;
+        var key = $"captcha:{sessionId}";
+        var stored = await cache.GetAsync<string>(key);
+        if (stored is null) return false;
 
-        cache.Remove($"captcha_{sessionId}"); // one-time use
+        await cache.RemoveAsync(key); // one-time use
         return string.Equals(stored, userInput, StringComparison.OrdinalIgnoreCase);
     }
 

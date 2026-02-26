@@ -12,7 +12,7 @@
 
   @if (comment.attachmentPath && comment.attachmentType === 'Image') {
     <img
-      [src]="apiBase + comment.attachmentPath"
+      [src]="comment.attachmentPath"
       alt="attachment"
       class="attachment-img"
       (click)="openLightbox(comment.attachmentPath!)"
@@ -20,7 +20,7 @@
   }
 
   @if (comment.attachmentPath && comment.attachmentType === 'Text') {
-    <a [href]="apiBase + comment.attachmentPath" target="_blank">📄 Text attachment</a>
+    <a [href]="comment.attachmentPath" target="_blank">📄 Text attachment</a>
   }
 
   @if (lightboxSrc) {

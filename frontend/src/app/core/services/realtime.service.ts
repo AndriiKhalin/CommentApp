@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as signalR from '@microsoft/signalr';
 import { Subject } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class RealtimeService {
@@ -9,7 +10,7 @@ export class RealtimeService {
 
   connect(): void {
     this.connection = new signalR.HubConnectionBuilder()
-      .withUrl('http://localhost:5000/hubs/comments')
+      .withUrl(environment.hubUrl)
       .withAutomaticReconnect()
       .build();
 

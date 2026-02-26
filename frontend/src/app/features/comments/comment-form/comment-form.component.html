@@ -4,7 +4,7 @@
     <input formControlName="userName" placeholder="User Name *" />
     @if (f['userName'].touched && f['userName'].errors) {
       <span class="error">
-        {{ f['userName'].errors?.['required'] ? 'Required' : 'Latin letters and digits only' }}
+        {{ f['userName'].errors['required'] ? 'Required' : 'Latin letters and digits only' }}
       </span>
     }
   </div>

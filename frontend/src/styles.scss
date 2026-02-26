@@ -1,1 +1,100 @@
 /* You can add global styles to this file, and also import other style files */
+body {
+  margin: 0;
+  font-family: Inter, Arial, sans-serif;
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.app {
+  max-width: 980px;
+  margin: 24px auto;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+h1 { margin: 0 0 16px; }
+
+.form-row { margin-bottom: 10px; }
+
+input, textarea, button { font: inherit; }
+
+input, textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 10px;
+}
+
+textarea { min-height: 110px; }
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+button {
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 12px;
+  display: block;
+  margin-top: 4px;
+}
+
+.comments-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+}
+
+.comments-table th, .comments-table td {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px;
+  text-align: left;
+}
+
+.comment-item {
+  margin-top: 14px;
+  border-left: 2px solid #dbeafe;
+  padding-left: 12px;
+}
+
+.comment-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.comment-body {
+  margin: 8px 0;
+  line-height: 1.45;
+}
+
+.attachment-img {
+  max-width: 240px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.pagination {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.pagination button.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}

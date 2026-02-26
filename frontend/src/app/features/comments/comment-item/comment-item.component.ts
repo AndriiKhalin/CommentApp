@@ -2,6 +2,7 @@ import { Component, Input, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Comment } from '../../../core/models/comment.model';
 import { CommentFormComponent } from '../comment-form/comment-form.component';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-comment-item',
@@ -16,7 +17,7 @@ export class CommentItemComponent {
   showReply = false;
   lightboxSrc: string | null = null;
 
-  readonly apiBase = 'http://localhost:5000';
+  readonly apiBase = environment.apiUrl;
 
   get marginLeft(): string {
     return `${this.depth * 24}px`;
