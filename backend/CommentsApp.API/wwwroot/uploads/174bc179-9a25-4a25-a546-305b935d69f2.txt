@@ -1,0 +1,4 @@
+Department.ID	Department.Name
+1	Аптека 1
+2	Аптека 2
+3	Аптека 3
