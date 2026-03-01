@@ -16,8 +16,13 @@ using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var webRootPath = builder.Environment.WebRootPath
+    ?? Path.Combine(builder.Environment.ContentRootPath, "wwwroot");
+Directory.CreateDirectory(webRootPath);
+builder.Environment.WebRootPath = webRootPath;
+
 builder.Services.AddDbContext<CommentsDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("Default"),
+    options.UseSqlite(builder.Configuration.GetConnectionString("Default"),
         sql => sql.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)));
 
 // Redis
@@ -36,9 +41,6 @@ builder.Services.AddSingleton<CaptchaService>();
 builder.Services.AddSingleton<ICacheService, RedisCacheService>();
 builder.Services.AddSingleton<IBackgroundTaskQueue, BackgroundTaskQueue>();
 builder.Services.AddHostedService<QueuedHostedService>();
-//builder.Services.AddSingleton<ICommentsCache, RedisCommentsCache>();
-//builder.Services.AddSingleton<ICommentQueue, RedisCommentQueue>();
-//builder.Services.AddHostedService<CommentQueueWorker>();
 
 // FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<GetCommentsQueryHandler>();
@@ -61,7 +63,7 @@ builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
-        policy.WithOrigins("http://localhost:4200", "http://localhost:5173")
+        policy.WithOrigins("http://localhost:4200", "http://localhost:5173", "http://localhost")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials());
@@ -90,7 +92,7 @@ using (var scope = app.Services.CreateScope())
     await db.Database.MigrateAsync();
 }
 
-if (!app.Environment.IsEnvironment("Docker") || !app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 
 app.UseCors();

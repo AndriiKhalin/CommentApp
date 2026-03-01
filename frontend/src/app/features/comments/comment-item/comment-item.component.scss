@@ -74,12 +74,43 @@
   position: fixed;
   inset: 0;
   background: rgba(2, 6, 23, .72);
+  backdrop-filter: blur(6px);
   display: grid;
   place-items: center;
   z-index: 1000;
+  padding: 24px;
+  cursor: zoom-out;
 }
+
 .lightbox img {
-  max-width: 92vw;
-  max-height: 92vh;
+  max-width: min(65vw, 900px);
+  max-height: 75vh;
+  min-width: min(50vw, 600px);
+  min-height: min(50vh, 500px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
   border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
+  animation: lightbox-in .2s ease-out;
+}
+
+@keyframes lightbox-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  .lightbox img {
+    max-width: 90vw;
+    max-height: 70vh;
+    min-width: 80vw;
+    min-height: 40vh;
+  }
 }

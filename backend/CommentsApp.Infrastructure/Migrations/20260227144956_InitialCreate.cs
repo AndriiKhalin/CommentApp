@@ -15,16 +15,16 @@ namespace CommentsApp.Infrastructure.Migrations
                 name: "Comments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    UserName = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Email = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: false),
-                    HomePage = table.Column<string>(type: "nvarchar(2048)", maxLength: 2048, nullable: true),
-                    Text = table.Column<string>(type: "nvarchar(max)", maxLength: 5000, nullable: false),
-                    AttachmentPath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    AttachmentType = table.Column<int>(type: "int", nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "GETUTCDATE()"),
-                    ParentId = table.Column<int>(type: "int", nullable: true)
+                    Id = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    UserName = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "TEXT", maxLength: 255, nullable: false),
+                    HomePage = table.Column<string>(type: "TEXT", maxLength: 2048, nullable: true),
+                    Text = table.Column<string>(type: "TEXT", maxLength: 5000, nullable: false),
+                    AttachmentPath = table.Column<string>(type: "TEXT", nullable: true),
+                    AttachmentType = table.Column<int>(type: "INTEGER", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "TEXT", nullable: false, defaultValueSql: "datetime('now')"),
+                    ParentId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {

@@ -1,22 +1,6 @@
 # version: '3.9'
 
 services:
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    environment:
-      ACCEPT_EULA: "Y"
-      SA_PASSWORD: "YourStrong@Passw0rd"
-      MSSQL_PID: "Express"
-    ports:
-      - "1434:1433"
-    volumes:
-      - mssqldata:/var/opt/mssql
-    healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -Q 'SELECT 1' -No"]
-      interval: 10s
-      timeout: 10s
-      retries: 10
-
   redis:
     image: redis:7-alpine
     ports:
@@ -32,19 +16,19 @@ services:
   backend:
     build: ./backend
     environment:
-      ConnectionStrings__Default: "Server=mssql;Database=commentsdb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;"
+      ConnectionStrings__Default: "Data Source=/app/data/comments.db"
       ConnectionStrings__Redis: "redis:6379"
       ASPNETCORE_HTTP_PORTS: "5000"
+      ASPNETCORE_ENVIRONMENT: "Production"
       # ASPNETCORE_URLS: "http://+:5000"
     ports:
       - "5000:5000"
+    volumes:
+      - sqlitedata:/app/data
+      - uploads:/app/wwwroot/uploads
     depends_on:
-      mssql:
-        condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - uploads:/app/wwwroot/uploads
 
   frontend:
     build: ./frontend
@@ -54,6 +38,6 @@ services:
       - backend
 
 volumes:
-  mssqldata:
+  sqlitedata:
   redisdata:
   uploads:

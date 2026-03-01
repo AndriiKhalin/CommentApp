@@ -16,7 +16,7 @@ public class CommentsDbContext(DbContextOptions<CommentsDbContext> options) : Db
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.Property(e => e.HomePage).HasMaxLength(2048);
             entity.Property(e => e.Text).HasMaxLength(5000).IsRequired();
-            entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("datetime('now')");
 
             // Self-referencing relationship
             entity.HasOne(e => e.Parent)

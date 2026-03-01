@@ -2,7 +2,6 @@
 
 # This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
-USER $APP_UID
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
@@ -13,6 +12,9 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["CommentsApp.API/CommentsApp.API.csproj", "CommentsApp.API/"]
+COPY ["CommentsApp.Application/CommentsApp.Application.csproj", "CommentsApp.Application/"]
+COPY ["CommentsApp.Domain/CommentsApp.Domain.csproj", "CommentsApp.Domain/"]
+COPY ["CommentsApp.Infrastructure/CommentsApp.Infrastructure.csproj", "CommentsApp.Infrastructure/"]
 RUN dotnet restore "./CommentsApp.API/CommentsApp.API.csproj"
 COPY . .
 WORKDIR "/src/CommentsApp.API"
@@ -27,4 +29,8 @@ RUN dotnet publish "./CommentsApp.API.csproj" -c $BUILD_CONFIGURATION -o /app/pu
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+RUN mkdir -p /app/data /app/wwwroot/uploads && chown -R $APP_UID:$APP_UID /app/data /app/wwwroot
+
+USER $APP_UID
 ENTRYPOINT ["dotnet", "CommentsApp.API.dll"]

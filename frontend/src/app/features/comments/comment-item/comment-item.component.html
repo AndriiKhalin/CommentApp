@@ -40,7 +40,6 @@
     />
   }
 
-  <!-- Recursive nested replies -->
   @for (reply of comment.replies; track reply.id) {
     <app-comment-item [comment]="reply" [depth]="depth + 1" />
   }

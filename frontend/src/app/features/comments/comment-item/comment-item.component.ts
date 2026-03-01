@@ -29,7 +29,7 @@ export class CommentItemComponent {
   }
 
   openLightbox(path: string): void {
-    this.lightboxSrc = `${this.apiBase}${path}`;
+    this.lightboxSrc = path;
   }
 
   closeLightbox(): void {

@@ -1,18 +1,18 @@
--- Compatible with MySQL Workbench visualization (generic SQL)
+-- SQLite schema for Comments Application
 
-CREATE TABLE Comments (
-    Id              INT IDENTITY(1,1) PRIMARY KEY,
-    UserName        NVARCHAR(100) NOT NULL,
-    Email           NVARCHAR(200) NOT NULL,
-    HomePage        NVARCHAR(500) NULL,
-    Text            NVARCHAR(MAX) NOT NULL,
-    AttachmentPath  NVARCHAR(500) NULL,
-    AttachmentType  NVARCHAR(10)  NULL CHECK (AttachmentType IN ('Image', 'Text')),
-    CreatedAt       DATETIME2 NOT NULL DEFAULT GETUTCDATE(),
-    ParentId        INT NULL REFERENCES Comments(Id) ON DELETE NO ACTION
+CREATE TABLE IF NOT EXISTS Comments (
+    Id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    UserName        TEXT    NOT NULL,
+    Email           TEXT    NOT NULL,
+    HomePage        TEXT    NULL,
+    Text            TEXT    NOT NULL,
+    AttachmentPath  TEXT    NULL,
+    AttachmentType  INTEGER NULL,
+    CreatedAt       TEXT    NOT NULL DEFAULT (datetime('now')),
+    ParentId        INTEGER NULL REFERENCES Comments(Id) ON DELETE RESTRICT
 );
 
-CREATE INDEX IX_Comments_UserName  ON Comments(UserName);
-CREATE INDEX IX_Comments_Email     ON Comments(Email);
-CREATE INDEX IX_Comments_CreatedAt ON Comments(CreatedAt);
-CREATE INDEX IX_Comments_ParentId  ON Comments(ParentId);
+CREATE INDEX IF NOT EXISTS IX_Comments_UserName  ON Comments(UserName);
+CREATE INDEX IF NOT EXISTS IX_Comments_Email     ON Comments(Email);
+CREATE INDEX IF NOT EXISTS IX_Comments_CreatedAt ON Comments(CreatedAt);
+CREATE INDEX IF NOT EXISTS IX_Comments_ParentId  ON Comments(ParentId);
