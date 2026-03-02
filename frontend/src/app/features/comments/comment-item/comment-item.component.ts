@@ -1,8 +1,7 @@
-import { Component, Input, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Comment } from '../../../core/models/comment.model';
 import { CommentFormComponent } from '../comment-form/comment-form.component';
-import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-comment-item',
@@ -14,11 +13,10 @@ import { environment } from '../../../../environments/environment';
 export class CommentItemComponent {
   @Input() comment!: Comment;
   @Input() depth = 0;
+  @Output() replyPosted = new EventEmitter<void>();
 
   showReply = false;
   lightboxSrc: string | null = null;
-
-  readonly apiBase = environment.apiUrl;
 
   get marginLeft(): string {
     return `${this.depth * 24}px`;
@@ -26,6 +24,7 @@ export class CommentItemComponent {
 
   onNewComment(): void {
     this.showReply = false;
+    this.replyPosted.emit();
   }
 
   openLightbox(path: string): void {

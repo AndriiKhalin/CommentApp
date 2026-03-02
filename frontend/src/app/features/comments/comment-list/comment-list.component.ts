@@ -19,12 +19,13 @@ type SortField = 'createdAt' | 'userName' | 'email';
 export class CommentListComponent implements OnInit, OnDestroy {
   private commentService = inject(CommentService);
   private realtimeService = inject(RealtimeService);
-  private sub!: Subscription;
+  private sub?: Subscription;
 
   result: PagedResult<Comment> | null = null;
   page = 1;
   sortBy: SortField = 'createdAt';
   descending = true;
+  expandedId: number | null = null;
 
   ngOnInit(): void {
     this.loadComments();
@@ -43,6 +44,14 @@ export class CommentListComponent implements OnInit, OnDestroy {
       .subscribe(data => this.result = data);
   }
 
+  toggleExpand(id: number): void {
+    this.expandedId = this.expandedId === id ? null : id;
+  }
+
+  stripHtml(html: string): string {
+    return html?.replace(/<[^>]*>/g, '') ?? '';
+  }
+
   handleSort(field: SortField): void {
     if (this.sortBy === field) {
       this.descending = !this.descending;
@@ -51,6 +60,7 @@ export class CommentListComponent implements OnInit, OnDestroy {
       this.descending = true;
     }
     this.page = 1;
+    this.expandedId = null;
     this.loadComments();
   }
 
@@ -60,7 +70,8 @@ export class CommentListComponent implements OnInit, OnDestroy {
   }
 
   get totalPages(): number {
-    return this.result ? Math.ceil(this.result.total / 25) : 0;
+    if (!this.result) return 1;
+    return Math.max(1, Math.ceil(this.result.total / 25));
   }
 
   get pages(): number[] {
@@ -68,7 +79,9 @@ export class CommentListComponent implements OnInit, OnDestroy {
   }
 
   goToPage(p: number): void {
+    if (p < 1 || p > this.totalPages) return;
     this.page = p;
+    this.expandedId = null;
     this.loadComments();
   }
 }

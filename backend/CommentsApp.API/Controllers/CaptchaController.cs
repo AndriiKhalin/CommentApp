@@ -70,14 +70,14 @@ public class CaptchaController(CaptchaService captchaService, IWebHostEnvironmen
 
             if (!System.IO.File.Exists(fontPath))
             {
-                if (SystemFonts.TryGet("Arial", out FontFamily systemFamily))
+                if (SystemFonts.TryGet("Arial", out var systemFamily))
                 {
                     _cachedFontFamily = systemFamily;
                     _fontLoaded = true;
                     return _cachedFontFamily;
                 }
 
-                if (SystemFonts.TryGet("DejaVu Sans", out FontFamily dejaVu))
+                if (SystemFonts.TryGet("DejaVu Sans", out var dejaVu))
                 {
                     _cachedFontFamily = dejaVu;
                     _fontLoaded = true;

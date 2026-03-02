@@ -9,16 +9,12 @@
 .comment-header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   background: #f5f8ff;
   border: 1px solid #e2e8f0;
   border-radius: 10px;
   padding: 9px 11px;
-}
-
-.comment-header .name {
-  font-weight: 700;
-  color: #0f172a;
 }
 
 .comment-header .email,
@@ -32,85 +28,145 @@
   color: #334155;
   line-height: 1.6;
   font-size: 15px;
+  word-break: break-word;
 }
 
-.reply-btn,
-.comment-item button {
+/* Rendered HTML in comment body */
+.comment-body code {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+}
+
+.comment-body a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.comment-body strong {
+  font-weight: 700;
+}
+
+.comment-body i {
+  font-style: italic;
+}
+
+.reply-btn {
   border: 1px solid #cbd5e1;
   background: #fff;
   border-radius: 8px;
   padding: 4px 10px;
   cursor: pointer;
   transition: .15s ease;
+  font-size: 13px;
 }
 
-.reply-btn:hover,
-.comment-item button:hover {
+.reply-btn:hover {
   background: #eef2ff;
   border-color: #a5b4fc;
   transform: translateY(-1px);
 }
 
-.comment-item button {
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  border-radius: 8px;
-  padding: 4px 10px;
-  cursor: pointer;
-}
-.comment-item button:hover {
-  background: #eef2ff;
-  border-color: #a5b4fc;
+.text-attachment-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0;
 }
 
+.text-attachment {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--primary-2, #2563eb);
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.text-attachment:hover {
+  background: rgba(37, 99, 235, 0.08);
+  text-decoration: underline;
+}
+
+.download-link {
+  color: var(--muted, #64748b);
+  font-size: 12px;
+}
+
+/* Attachment thumbnail */
 .attachment-img {
   max-width: 280px;
   border-radius: 10px;
   border: 1px solid #e2e8f0;
   box-shadow: 0 8px 20px rgba(15, 23, 42, .08);
+  cursor: zoom-in;
+  transition: transform .2s ease, box-shadow .2s ease;
+  display: block;
+  margin: 8px 0;
 }
 
+.attachment-img:hover {
+  transform: scale(1.03);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, .15);
+}
+
+/* ========== LIGHTBOX (Lightbox2-style) ========== */
 .lightbox {
   position: fixed;
   inset: 0;
-  background: rgba(2, 6, 23, .72);
-  backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, .82);
+  backdrop-filter: blur(8px);
   display: grid;
   place-items: center;
   z-index: 1000;
   padding: 24px;
   cursor: zoom-out;
+  animation: lightbox-overlay-in .25s ease-out;
 }
 
 .lightbox img {
-  max-width: min(65vw, 900px);
-  max-height: 75vh;
-  min-width: min(50vw, 600px);
-  min-height: min(50vh, 500px);
+  max-width: min(80vw, 1000px);
+  max-height: 80vh;
+  min-width: min(50vw, 500px);
+  min-height: min(40vh, 400px);
   width: auto;
   height: auto;
   object-fit: contain;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, .4);
-  animation: lightbox-in .2s ease-out;
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, .05),
+    0 25px 80px rgba(0, 0, 0, .6);
+  cursor: default;
+  animation: lightbox-img-in .3s cubic-bezier(.22, 1, .36, 1);
 }
 
-@keyframes lightbox-in {
+@keyframes lightbox-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes lightbox-img-in {
   from {
     opacity: 0;
-    transform: scale(0.92);
+    transform: scale(0.85) translateY(20px);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateY(0);
   }
 }
 
 @media (max-width: 768px) {
   .lightbox img {
-    max-width: 90vw;
-    max-height: 70vh;
-    min-width: 80vw;
-    min-height: 40vh;
+    max-width: 92vw;
+    max-height: 75vh;
+    min-width: 85vw;
+    min-height: 30vh;
   }
 }

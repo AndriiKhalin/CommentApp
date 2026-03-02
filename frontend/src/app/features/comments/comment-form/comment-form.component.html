@@ -1,67 +1,127 @@
 <form [formGroup]="form" (ngSubmit)="onSubmit()" class="comment-form">
+  <div class="form-main">
+    <div class="form-fields">
+      <div class="form-row-inline">
+        <div class="form-field">
+          <input formControlName="userName" placeholder="User Name *" />
+          @if (f['userName'].touched && f['userName'].errors) {
+            <span class="error">
+              {{ f['userName'].errors['required'] ? 'Required' : 'Latin letters and digits only' }}
+            </span>
+          }
+        </div>
+        <div class="form-field">
+          <input formControlName="email" type="email" placeholder="E-mail *" />
+          @if (f['email'].touched && f['email'].errors) {
+            <span class="error">Valid email required</span>
+          }
+        </div>
+        <div class="form-field">
+          <input formControlName="homePage" placeholder="Home Page (optional)" />
+          @if (f['homePage'].touched && f['homePage'].errors) {
+            <span class="error">Must be valid URL (http/https)</span>
+          }
+        </div>
+      </div>
 
-  <div class="form-row">
-    <input formControlName="userName" placeholder="User Name *" />
-    @if (f['userName'].touched && f['userName'].errors) {
-      <span class="error">
-        {{ f['userName'].errors['required'] ? 'Required' : 'Latin letters and digits only' }}
-      </span>
-    }
-  </div>
+      <!-- Textarea with toolbar -->
+      <div class="editor-wrapper" [class.focused]="textareaFocused">
+        <div class="editor-toolbar">
+          <div class="toolbar-left">
+            <button type="button" class="tool-btn" (click)="wrapSelection('strong')" title="Bold [strong]">
+              <span class="tool-icon bold-icon">B</span>
+            </button>
+            <button type="button" class="tool-btn" (click)="wrapSelection('i')" title="Italic [i]">
+              <span class="tool-icon italic-icon">I</span>
+            </button>
+            <button type="button" class="tool-btn" (click)="wrapSelection('code')" title="Code [code]">
+              <span class="tool-icon code-icon">&lt;/&gt;</span>
+            </button>
+            <button type="button" class="tool-btn" (click)="insertLink()" title="Link [a]">
+              <span class="tool-icon link-icon">🔗</span>
+            </button>
+            <span class="toolbar-divider"></span>
+            <label class="tool-btn file-label" title="Attach image or text file">
+              <span class="tool-icon attach-icon">📎</span>
+              <input
+                #fileInput
+                type="file"
+                accept=".jpg,.jpeg,.gif,.png,.txt"
+                (change)="onFileChange($event)"
+                hidden
+              />
+            </label>
+          </div>
+          <div class="toolbar-right">
+            <button type="button" class="tool-btn preview-btn" (click)="showPreview = !showPreview" title="Preview">
+              👁 Preview
+            </button>
+          </div>
+        </div>
 
-  <div class="form-row">
-    <input formControlName="email" type="email" placeholder="E-mail *" />
-    @if (f['email'].touched && f['email'].errors) {
-      <span class="error">Valid email required</span>
-    }
-  </div>
+        <textarea
+          #messageInput
+          formControlName="text"
+          rows="5"
+          placeholder="Your message *"
+          (focus)="textareaFocused = true"
+          (blur)="textareaFocused = false"
+        ></textarea>
+      </div>
 
-  <div class="form-row">
-    <input formControlName="homePage" placeholder="Home Page (optional)" />
-    @if (f['homePage'].touched && f['homePage'].errors) {
-      <span class="error">Must be valid URL (http/https)</span>
-    }
-  </div>
+      @if (f['text'].touched && f['text'].errors?.['required']) {
+        <span class="error">Required</span>
+      }
 
-  <!-- Tag toolbar -->
-  <div class="toolbar">
-    <button type="button" (click)="insertTag('<i>','</i>')">[i]</button>
-    <button type="button" (click)="insertTag('<strong>','</strong>')">[strong]</button>
-    <button type="button" (click)="insertTag('<code>','</code>')">[code]</button>
-    <button type="button" (click)="insertTag('<a href=&quot;&quot; title=&quot;&quot;>','</a>')">[a]</button>
-  </div>
-
-  <div class="form-row">
-    <textarea #messageInput formControlName="text" rows="5" placeholder="Your message *"></textarea>
-    @if (f['text'].touched && f['text'].errors?.['required']) {
-      <span class="error">Required</span>
-    }
-  </div>
-
-  <!-- Preview -->
-  @if (preview) {
-    <div class="preview">
-      <strong>Preview:</strong>
-      <div [innerHTML]="preview"></div>
+      @if (selectedFile) {
+        <div class="file-badge">
+          📄 {{ selectedFile.name }}
+          <button type="button" class="remove-file" (click)="removeFile()">✕</button>
+        </div>
+      }
+      @if (fileError) {
+        <span class="error">{{ fileError }}</span>
+      }
     </div>
-  }
 
-  <!-- CAPTCHA -->
-  <div class="form-row captcha-row">
-    <img [src]="captchaUrl" alt="captcha" (click)="loadCaptcha()" title="Click to refresh" />
-    <input formControlName="captcha" placeholder="Enter CAPTCHA *" />
-    @if (f['captcha'].touched && f['captcha'].errors?.['required']) {
-      <span class="error">Required</span>
+    <!-- Preview -->
+    @if (showPreview && f['text'].value) {
+      <div class="preview-box">
+        <span class="preview-label">Preview</span>
+        <div class="preview-content" [innerHTML]="f['text'].value"></div>
+      </div>
     }
-  </div>
 
-  <!-- File -->
-  <div class="form-row">
-    <input type="file" accept=".jpg,.jpeg,.gif,.png,.txt" (change)="onFileChange($event)" />
-    @if (fileError) {
-      <span class="error">{{ fileError }}</span>
+    <!-- CAPTCHA — shows only when required fields are valid -->
+    @if (showCaptcha) {
+      <div class="captcha-section">
+        <div class="captcha-row">
+          <div class="captcha-image-wrapper">
+            @if (captchaUrl) {
+              <img [src]="captchaUrl" alt="captcha" class="captcha-img" />
+            } @else {
+              <div class="captcha-placeholder">Loading...</div>
+            }
+            <button type="button" class="captcha-refresh" (click)="loadCaptcha()" title="Refresh CAPTCHA">
+              ↻
+            </button>
+          </div>
+          <input formControlName="captcha" placeholder="Enter CAPTCHA *" class="captcha-input" />
+        </div>
+        @if (f['captcha'].touched && f['captcha'].errors?.['required']) {
+          <span class="error">Required</span>
+        }
+      </div>
     }
-  </div>
 
-  <button type="submit" class="submit-btn">Post Comment</button>
+    <div class="form-footer">
+      <button
+        type="submit"
+        class="submit-btn"
+        [disabled]="!showCaptcha || form.invalid"
+      >
+        Post Comment
+      </button>
+    </div>
+  </div>
 </form>

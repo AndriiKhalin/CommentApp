@@ -3,42 +3,83 @@
 
   <app-comment-form (commentPosted)="loadComments()" />
 
-  <table class="comments-table">
-    <thead>
-      <tr>
-        <th (click)="handleSort('userName')" style="cursor:pointer">
-          User Name {{ sortIcon('userName') }}
-        </th>
-        <th (click)="handleSort('email')" style="cursor:pointer">
-          E-mail {{ sortIcon('email') }}
-        </th>
-        <th (click)="handleSort('createdAt')" style="cursor:pointer">
-          Date {{ sortIcon('createdAt') }}
-        </th>
-        <th>Preview</th>
-      </tr>
-    </thead>
-    <tbody>
-      @for (comment of result?.items; track comment.id) {
+  @if (result?.items?.length) {
+    <table class="comments-table">
+      <thead>
         <tr>
-          <td>{{ comment.userName }}</td>
-          <td>{{ comment.email }}</td>
-          <td>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</td>
-          <td>{{ comment.text | slice:0:60 }}...</td>
+          <th (click)="handleSort('userName')">
+            User Name {{ sortIcon('userName') }}
+          </th>
+          <th (click)="handleSort('email')">
+            E-mail {{ sortIcon('email') }}
+          </th>
+          <th (click)="handleSort('createdAt')">
+            Date {{ sortIcon('createdAt') }}
+          </th>
+          <th>Preview</th>
         </tr>
+      </thead>
+      <tbody>
+        @for (comment of result?.items; track comment.id) {
+          <tr
+            class="comment-row"
+            [class.expanded]="expandedId === comment.id"
+            (click)="toggleExpand(comment.id)"
+          >
+            <td>{{ comment.userName }}</td>
+            <td>{{ comment.email }}</td>
+            <td>{{ comment.createdAt | date:'dd.MM.yyyy HH:mm' }}</td>
+            <td class="preview-cell">
+              <span class="expand-icon">{{ expandedId === comment.id ? '▾' : '▸' }}</span>
+              {{ stripHtml(comment.text) | slice:0:50 }}
+            </td>
+          </tr>
+          @if (expandedId === comment.id) {
+            <tr class="detail-row">
+              <td colspan="4">
+                <div class="detail-container">
+                  <app-comment-item
+                    [comment]="comment"
+                    (replyPosted)="loadComments()"
+                  />
+                </div>
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- Pagination (always visible) -->
+    <div class="pagination">
+      <button
+        [disabled]="page === 1"
+        (click)="goToPage(page - 1)"
+      >
+        ‹ Prev
+      </button>
+
+      @for (p of pages; track p) {
+        <button
+          [class.active]="p === page"
+          (click)="goToPage(p)"
+        >
+          {{ p }}
+        </button>
       }
-    </tbody>
-  </table>
 
-  <!-- Full threaded view -->
-  @for (comment of result?.items; track comment.id) {
-    <app-comment-item [comment]="comment" />
+      <button
+        [disabled]="page === totalPages"
+        (click)="goToPage(page + 1)"
+      >
+        Next ›
+      </button>
+
+      <span class="page-info">
+        Page {{ page }} of {{ totalPages }} ({{ result?.total }} comments)
+      </span>
+    </div>
+  } @else if (result) {
+    <div class="empty-state">No comments yet. Be the first!</div>
   }
-
-  <!-- Pagination -->
-  <div class="pagination">
-    @for (p of pages; track p) {
-      <button [class.active]="p === page" (click)="goToPage(p)">{{ p }}</button>
-    }
-  </div>
 </div>

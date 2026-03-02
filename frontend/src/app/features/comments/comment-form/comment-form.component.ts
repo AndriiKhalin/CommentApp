@@ -1,10 +1,10 @@
 import {
-  Component, OnInit, Input, Output, EventEmitter, inject, ViewChild, ElementRef
+  Component, OnInit, OnDestroy, Input, Output, EventEmitter,
+  inject, ViewChild, ElementRef
 } from '@angular/core';
-import {
-  ReactiveFormsModule, FormBuilder, Validators, AbstractControl
-} from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { CommentService } from '../../../core/services/comment.service';
 import { CaptchaService } from '../../../core/services/captcha.service';
 import { Comment } from '../../../core/models/comment.model';
@@ -16,55 +16,60 @@ import { Comment } from '../../../core/models/comment.model';
   templateUrl: './comment-form.component.html',
   styleUrl: './comment-form.component.scss'
 })
-export class CommentFormComponent implements OnInit {
+export class CommentFormComponent implements OnInit, OnDestroy {
   @Input() parentId?: number;
   @Output() commentPosted = new EventEmitter<Comment>();
   @ViewChild('messageInput') messageInput?: ElementRef<HTMLTextAreaElement>;
+  @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
 
   private fb = inject(FormBuilder);
   private commentService = inject(CommentService);
   private captchaService = inject(CaptchaService);
+  private sub?: Subscription;
 
   captchaUrl = '';
   captchaSessionId = '';
   selectedFile: File | null = null;
   fileError = '';
-  preview = '';
+  showCaptcha = false;
+  showPreview = false;
+  textareaFocused = false;
+  private captchaLoaded = false;
 
   form = this.fb.group({
-    userName: ['', [
-      Validators.required,
-      Validators.pattern(/^[a-zA-Z0-9]+$/)
-    ]],
+    userName: ['', [Validators.required, Validators.pattern(/^[a-zA-Z0-9]+$/)]],
     email: ['', [Validators.required, Validators.email]],
     homePage: ['', [Validators.pattern(/^https?:\/\/.+/)]],
+    text: ['', Validators.required],
     captcha: ['', Validators.required],
-    text: ['', Validators.required]
   });
 
   ngOnInit(): void {
-    this.loadCaptcha();
-
-    // Live preview
-    this.form.get('text')!.valueChanges.subscribe(val => {
-      this.preview = val ?? '';
-    });
+    this.sub = this.form.valueChanges.subscribe(() => this.checkCaptchaReady());
   }
 
   ngOnDestroy(): void {
-    if (this.captchaUrl) {
-      URL.revokeObjectURL(this.captchaUrl);
+    this.sub?.unsubscribe();
+    if (this.captchaUrl) URL.revokeObjectURL(this.captchaUrl);
+  }
+
+  // ── Captcha ──
+
+  private checkCaptchaReady(): void {
+    const { userName, email, text } = this.form.controls;
+    if (userName.valid && email.valid && text.valid && !this.showCaptcha) {
+      this.showCaptcha = true;
+      if (!this.captchaLoaded) this.loadCaptcha();
     }
   }
 
   loadCaptcha(): void {
     this.captchaService.getCaptcha().subscribe({
       next: ({ blob, sessionId }) => {
-        if (this.captchaUrl) {
-          URL.revokeObjectURL(this.captchaUrl);
-        }
+        if (this.captchaUrl) URL.revokeObjectURL(this.captchaUrl);
         this.captchaUrl = URL.createObjectURL(blob);
         this.captchaSessionId = sessionId;
+        this.captchaLoaded = true;
       },
       error: () => {
         this.captchaUrl = '';
@@ -73,37 +78,57 @@ export class CommentFormComponent implements OnInit {
     });
   }
 
-  insertTag(open: string, close: string): void {
-  const textarea = this.messageInput?.nativeElement;
-  if (!textarea) return;
+  // ── Tag insertion ──
 
-  const current = this.form.controls.text.value ?? '';
-  const start = textarea.selectionStart ?? current.length;
-  const end = textarea.selectionEnd ?? current.length;
+  wrapSelection(tag: string): void {
+    const ta = this.messageInput?.nativeElement;
+    if (!ta) return;
+    ta.focus();
 
-  const selected = current.slice(start, end) || 'text';
+    const val = this.form.controls.text.value ?? '';
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = val.slice(start, end) || 'text';
+    const wrapped = `<${tag}>${selected}</${tag}>`;
 
-  const next =
-    current.slice(0, start) +
-    open +
-    selected +
-    close +
-    current.slice(end);
+    this.updateTextValue(val.slice(0, start) + wrapped + val.slice(end), start + wrapped.length);
+  }
 
-  this.form.controls.text.setValue(next);
-  this.form.controls.text.markAsDirty();
-  this.form.controls.text.markAsTouched();
+  insertLink(): void {
+    const ta = this.messageInput?.nativeElement;
+    if (!ta) return;
+    ta.focus();
 
-  queueMicrotask(() => {
-    const pos = start + open.length + selected.length + close.length;
-    textarea.focus();
-    textarea.setSelectionRange(pos, pos);
-  });
-}
+    const url = prompt('Enter URL:', 'https://');
+    if (!url) return;
+    const title = prompt('Enter title (optional):', '') ?? '';
+
+    const val = this.form.controls.text.value ?? '';
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const selected = val.slice(start, end) || 'link text';
+    const titleAttr = title ? ` title="${title}"` : '';
+    const tag = `<a href="${url}"${titleAttr}>${selected}</a>`;
+
+    this.updateTextValue(val.slice(0, start) + tag + val.slice(end), start + tag.length);
+  }
+
+  private updateTextValue(newValue: string, cursorPos: number): void {
+    const ta = this.messageInput?.nativeElement;
+    this.form.controls.text.setValue(newValue);
+    this.form.controls.text.markAsDirty();
+    this.form.controls.text.markAsTouched();
+
+    queueMicrotask(() => {
+      ta?.focus();
+      ta?.setSelectionRange(cursorPos, cursorPos);
+    });
+  }
+
+  // ── File ──
 
   onFileChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
+    const file = (event.target as HTMLInputElement).files?.[0];
     if (!file) return;
 
     this.fileError = '';
@@ -119,6 +144,14 @@ export class CommentFormComponent implements OnInit {
     }
     this.selectedFile = file;
   }
+
+  removeFile(): void {
+    this.selectedFile = null;
+    this.fileError = '';
+    if (this.fileInput?.nativeElement) this.fileInput.nativeElement.value = '';
+  }
+
+  // ── Submit ──
 
   onSubmit(): void {
     if (this.form.invalid) {
@@ -140,14 +173,22 @@ export class CommentFormComponent implements OnInit {
     this.commentService.createComment(fd).subscribe({
       next: (comment) => {
         this.commentPosted.emit(comment);
-        this.form.reset();
-        this.loadCaptcha();
+        this.resetForm();
       },
       error: (err) => {
         alert(err.error?.error ?? 'Submission error');
         this.loadCaptcha();
       }
     });
+  }
+
+  private resetForm(): void {
+    this.form.reset();
+    this.selectedFile = null;
+    this.showPreview = false;
+    this.showCaptcha = false;
+    this.captchaLoaded = false;
+    if (this.fileInput?.nativeElement) this.fileInput.nativeElement.value = '';
   }
 
   get f() { return this.form.controls; }
