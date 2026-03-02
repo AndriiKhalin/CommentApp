@@ -12,6 +12,10 @@ Full-stack Single Page Application (SPA) for nested comments with file attachmen
 
 > **[http://khalin-comments.germanywestcentral.cloudapp.azure.com](http://khalin-comments.germanywestcentral.cloudapp.azure.com)**
 
+## 🎥 Demo Video
+
+[▶ Watch demo video](https://youtu.be/njRias2-9ig)
+
 ## 🛠 Tech Stack
 
 ### Backend
