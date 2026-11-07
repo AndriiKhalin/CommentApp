@@ -8,10 +8,6 @@
 
 Full-stack Single Page Application (SPA) for nested comments with file attachments, CAPTCHA, and real-time updates.
 
-## 🌐 Live Demo
-
-> **[http://khalin-comments.germanywestcentral.cloudapp.azure.com](http://khalin-comments.germanywestcentral.cloudapp.azure.com)**
-
 ## 🎥 Demo Video
 
 [▶ Watch demo video](https://youtu.be/njRias2-9ig)
@@ -172,3 +168,14 @@ If you need to use MS SQL Server instead of SQLite:
 4. Regenerate migrations: `dotnet ef migrations add InitialCreate`
 
 No changes needed in controllers, services, or frontend.
+
+---
+
+## 📌 Roadmap & Upcoming Features (Work in Progress)
+Planned features and technical improvements (est. 25+ hours of development):
+- [ ] **Rich Text Editing:** Integrate Markdown / WYSIWYG editor for nested comment creation.
+- [ ] **User Mentions & Notifications:** Add `@username` tagging system with email/in-app notification alerts.
+- [ ] **Reaction System:** Implement multi-emoji reaction support using Redis for high-throughput counters.
+- [ ] **Moderation Tools:** Add administrative moderation queue, profanity filtering, and spam detection middleware.
+- [ ] **Unit & Integration Testing:** Expand xUnit coverage for MediatR command handlers and Angular component specs.
+- [ ] **CI/CD Pipeline:** Automate build and Docker image deployment via GitHub Actions.
